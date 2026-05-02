@@ -1,5 +1,5 @@
 // 爪哇 37 團旅行手冊 Service Worker
-const CACHE_NAME = 'java37-v2';
+const CACHE_NAME = 'java37-v4';
 const ASSETS = [
   './',
   './index.html',
