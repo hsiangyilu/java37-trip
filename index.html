@@ -1,0 +1,907 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="爪哇37團">
+<meta name="theme-color" content="#b85c3a">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>爪哇 37 團 · 旅行手冊</title>
+<style>
+  :root {
+    --bg: #fafaf7;
+    --surface: #ffffff;
+    --surface-2: #f4f2ec;
+    --border: #e5e2d8;
+    --text: #2c2c2a;
+    --text-2: #6b6a64;
+    --text-3: #95938b;
+    --accent: #b85c3a;
+    --accent-bg: #faece7;
+    --warn: #854f0b;
+    --warn-bg: #faeeda;
+    --info: #185fa5;
+    --info-bg: #e6f1fb;
+    --success: #0f6e56;
+    --success-bg: #e1f5ee;
+    --radius: 10px;
+    --radius-lg: 14px;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, "PingFang TC", "Noto Sans TC", "Microsoft JhengHei", sans-serif; line-height: 1.6; -webkit-text-size-adjust: 100%; }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 20px 16px 80px; }
+  header { padding: 8px 0 24px; border-bottom: 0.5px solid var(--border); margin-bottom: 24px; }
+  header h1 { margin: 0 0 6px; font-size: 24px; font-weight: 500; letter-spacing: 0.5px; }
+  header .meta { font-size: 13px; color: var(--text-2); }
+  header .route { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+  /* tab navigation */
+  nav.tabs { position: sticky; top: 0; background: var(--bg); padding: 12px 0; margin: -12px 0 20px; z-index: 10; border-bottom: 0.5px solid var(--border); display: flex; gap: 8px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+  nav.tabs::-webkit-scrollbar { display: none; }
+  nav.tabs button { flex: 0 0 auto; background: transparent; border: 0.5px solid var(--border); color: var(--text-2); padding: 8px 16px; border-radius: 999px; font-size: 13px; font-family: inherit; cursor: pointer; white-space: nowrap; transition: all 0.15s; }
+  nav.tabs button.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+  nav.tabs button:hover:not(.active) { background: var(--surface-2); }
+
+  section { display: none; }
+  section.active { display: block; animation: fadeIn 0.2s ease-out; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  h2.section-title { font-size: 16px; font-weight: 500; margin: 0 0 14px; color: var(--text-2); letter-spacing: 0.5px; }
+
+  /* day cards */
+  .card { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 14px; }
+  .card.highlight { border: 1.5px solid var(--accent); }
+  .card-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+  .day-label { font-size: 11px; color: var(--text-3); letter-spacing: 1px; text-transform: uppercase; }
+  .day-title { font-size: 16px; font-weight: 500; margin-top: 2px; }
+  .badge { font-size: 11px; padding: 4px 10px; border-radius: var(--radius); font-weight: 500; }
+  .badge.info { background: var(--info-bg); color: var(--info); }
+  .badge.warn { background: var(--warn-bg); color: var(--warn); }
+  .badge.accent { background: var(--accent-bg); color: var(--accent); }
+  .badge.muted { background: var(--surface-2); color: var(--text-2); }
+
+  /* timeline 行程細節 */
+  .timeline { margin-top: 6px; }
+  .timeline .row { display: flex; gap: 14px; padding: 8px 0; border-top: 0.5px dashed var(--border); }
+  .timeline .row:first-child { border-top: 0; padding-top: 0; }
+  .timeline .time { flex: 0 0 66px; font-size: 12px; color: var(--text-2); font-family: ui-monospace, monospace; padding-top: 1px; }
+  .timeline .body { flex: 1; font-size: 13.5px; }
+  .timeline .body .title { font-weight: 500; }
+  .timeline .body .desc { color: var(--text-2); font-size: 12.5px; margin-top: 2px; line-height: 1.55; }
+  .timeline .body .tip { color: var(--accent); font-size: 12px; margin-top: 4px; }
+
+  .map-link { display: inline-block; font-size: 12px; color: var(--info); text-decoration: none; margin-top: 4px; padding: 2px 8px; background: var(--info-bg); border-radius: 6px; margin-right: 6px; }
+  .map-link:hover { background: #d6e8f7; }
+  .map-link::before { content: "📍 "; }
+
+  .info-row { display: flex; gap: 14px; padding: 6px 0; font-size: 13px; }
+  .info-row .label { color: var(--text-2); width: 60px; flex-shrink: 0; }
+  .stay-block { background: var(--surface-2); border-radius: var(--radius); padding: 10px 14px; margin-top: 12px; font-size: 13px; }
+  .stay-block .stay-label { font-size: 11px; color: var(--text-3); letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+
+  /* checklist 共用樣式 */
+  .checklist-tools { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+  .checklist-tools .progress { font-size: 13px; color: var(--text-2); margin-left: auto; }
+  .btn { background: transparent; border: 0.5px solid var(--border); color: var(--text-2); padding: 6px 12px; border-radius: 6px; font-size: 12px; font-family: inherit; cursor: pointer; }
+  .btn:hover { background: var(--surface-2); }
+
+  .group { background: var(--surface); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 12px; }
+  .group h3 { margin: 0 0 10px; font-size: 14px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .group .priority { font-size: 11px; color: var(--text-3); font-weight: 400; }
+  .group .priority.must { color: var(--accent); }
+  .group .num-tag { font-family: ui-monospace, monospace; font-size: 11px; color: var(--text-2); background: var(--surface-2); padding: 3px 8px; border-radius: 6px; letter-spacing: 1px; margin-right: 4px; }
+
+  .item { display: flex; align-items: flex-start; gap: 10px; padding: 7px 0; cursor: pointer; user-select: none; }
+  .item input[type="checkbox"] { margin: 4px 0 0; width: 16px; height: 16px; flex-shrink: 0; accent-color: var(--accent); cursor: pointer; }
+  .item .label-block { flex: 1; cursor: pointer; }
+  .item .label-text { font-size: 14px; }
+  .item .note { font-size: 12px; color: var(--text-3); margin-top: 2px; }
+  .item .note a { color: var(--info); }
+  .item.checked .label-text { text-decoration: line-through; color: var(--text-3); }
+  .item.checked .note { text-decoration: line-through; }
+
+  /* contact emergency */
+  .emergency-card { background: var(--accent-bg); border-radius: var(--radius-lg); padding: 14px 18px; margin-top: 24px; }
+  .emergency-card h3 { margin: 0 0 10px; font-size: 14px; font-weight: 500; color: var(--accent); }
+
+  /* city map cards */
+  .city-section { margin: 24px 0 14px; }
+  .city-section:first-of-type { margin-top: 0; }
+  .city-banner { background: linear-gradient(135deg, var(--info-bg), var(--surface-2)); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 14px 18px; margin-bottom: 14px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+  .city-banner .city-info { flex: 1; min-width: 0; }
+  .city-banner .city-name-tw { font-size: 18px; font-weight: 500; }
+  .city-banner .city-name-en { font-size: 12px; color: var(--text-2); margin-top: 2px; }
+  .city-banner .city-desc { font-size: 12px; color: var(--text-3); margin-top: 4px; }
+  .city-banner .map-cta { background: var(--info); color: white; font-size: 13px; padding: 8px 14px; border-radius: var(--radius); text-decoration: none; white-space: nowrap; font-weight: 500; }
+  .city-banner .map-cta:hover { background: #134d8a; }
+  .city-banner .map-cta::before { content: "🗺️ "; }
+
+  table.detail { width: 100%; font-size: 13px; border-collapse: collapse; }
+  table.detail td { padding: 5px 0; vertical-align: top; }
+  table.detail td.label { color: var(--text-2); padding-right: 14px; width: 110px; white-space: nowrap; }
+  table.detail a { color: var(--info); text-decoration: none; }
+
+  footer { text-align: center; font-size: 11px; color: var(--text-3); margin-top: 40px; padding-top: 16px; border-top: 0.5px solid var(--border); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>爪哇 37 團 · 小乘客手冊</h1>
+    <div class="meta">2026/5/12 — 5/19 · 7 天 6 夜</div>
+    <div class="route">泗水 → Bromo → Kucur → 瑪琅 → 日惹</div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button class="active" data-tab="prep">行前準備</button>
+    <button data-tab="baggage">行李清單</button>
+    <button data-tab="itinerary">行程表</button>
+    <button data-tab="contact">緊急聯絡</button>
+  </nav>
+
+  <!-- ========== 行前準備 ========== -->
+  <section id="prep" class="active">
+    <h2 class="section-title">出發前要完成的清單(可勾選)</h2>
+    <div class="checklist-tools">
+      <button class="btn" id="reset-prep-btn">全部清除</button>
+      <span class="progress" id="prep-progress">0 / 0</span>
+    </div>
+    <div id="prep-groups"></div>
+  </section>
+
+  <!-- ========== 行李清單 ========== -->
+  <section id="baggage">
+    <h2 class="section-title">行李清單(可勾選)</h2>
+    <div class="checklist-tools">
+      <button class="btn" id="reset-baggage-btn">全部清除</button>
+      <span class="progress" id="baggage-progress">0 / 0</span>
+    </div>
+    <div id="baggage-groups"></div>
+  </section>
+
+  <!-- ========== 行程表 ========== -->
+  <section id="itinerary">
+    <h2 class="section-title">每日行程</h2>
+
+    <!-- 泗水城市景點地圖 -->
+    <div class="city-section">
+      <div class="city-banner">
+        <div class="city-info">
+          <div class="city-name-tw">泗水</div>
+          <div class="city-name-en">Surabaya · DAY 0–1</div>
+          <div class="city-desc">九十路精選景點地圖,含偉大清真寺、潛艇博物館等</div>
+        </div>
+        <a class="map-cta" href="https://goo.gl/maps/x5d3WgqqREbEFBHH6" target="_blank">城市景點地圖</a>
+      </div>
+    </div>
+
+    <!-- DAY 0 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 0 · 5/12 二</div>
+          <div class="day-title">桃園 → 雅加達 → 泗水</div>
+        </div>
+        <span class="badge info">搭機集合</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">09:05</div>
+          <div class="body">
+            <div class="title">CI761 桃園 TPE → 雅加達 CGK</div>
+            <div class="desc">抵達 13:35,於雅加達國際機場 (CGK) 第三航廈轉機</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">17:20</div>
+          <div class="body">
+            <div class="title">CI9684 雅加達 CGK → 泗水 SUB</div>
+            <div class="desc">抵達 19:00,雅加達轉泗水須重新掛行李</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">19:30</div>
+          <div class="body">
+            <div class="title">機場 → 旅館</div>
+            <div class="desc">機場外穿制服司機帶到櫃檯買票報旅館名,計程車約 300 TWD,印尼盾付給商家(非司機),車程 40–60 分鐘</div>
+            <div class="tip">機場可先換印尼盾,建議帶 200 USD 在雅加達機場換匯率最佳</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Hotel Platinum Tunjungan(泗水)</strong></div>
+        <div style="color: var(--text-2); margin-top: 2px;">Jl. Tunjungan No.11–21, Genteng, Surabaya</div>
+        <a class="map-link" href="https://maps.app.goo.gl/ULCcRwruEytDJtt68" target="_blank">Google Maps</a>
+      </div>
+    </div>
+
+    <!-- DAY 1 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 1 · 5/13 三</div>
+          <div class="day-title">泗水香料走讀</div>
+        </div>
+        <span class="badge info">城市文化</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">12:00</div>
+          <div class="body">
+            <div class="title">旅館大廳集合</div>
+            <div class="desc">15:00 前抵達可寄放行李</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">13:00</div>
+          <div class="body">
+            <div class="title">香料走讀(13:00–15:30)</div>
+            <div class="desc">丁香煙博物館 → 唐人街/海鮮市場 → 香料市集 → 阿拉伯街與帕貝安清真寺</div>
+            <div class="tip">海鮮市場地上有血水留意鞋子;香料市集粉塵多戴口罩;進清真寺需過膝長裙褲</div>
+            <a class="map-link" href="https://maps.app.goo.gl/LCpV5ZaHvcrZjSBz6" target="_blank">丁香煙博物館</a>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Pasar+Pabean+Surabaya" target="_blank">香料市集</a>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Masjid+Sunan+Ampel+Surabaya" target="_blank">阿拉伯街/清真寺</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">18:30</div>
+          <div class="body">
+            <div class="title">相見歡(18:30–20:30)</div>
+            <div class="desc">自由參加,費用自理</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Hotel Platinum Tunjungan(泗水)</strong></div>
+      </div>
+    </div>
+
+    <!-- DAY 2 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 2 · 5/14 四</div>
+          <div class="day-title">前往 Bromo 火山</div>
+        </div>
+        <span class="badge warn">長途車</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">09:00</div>
+          <div class="body">
+            <div class="title">出發前往布羅莫</div>
+            <div class="desc">車程約 4 小時</div>
+            <div class="tip">易暈車先吃藥;準備零食;海拔高夜間冷</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">14:00</div>
+          <div class="body">
+            <div class="title">山上旅館入住</div>
+            <div class="desc">山上可能斷電/沒熱水,要有心理準備</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">15:30</div>
+          <div class="body">
+            <div class="title">邊境小健行(15:30–17:00)</div>
+            <div class="desc">前往兩處觀景台遠眺火山</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Lava View Lodge(Bromo)</strong></div>
+        <div style="color: var(--text-2); margin-top: 2px;">Cemorolawang, Ngadisari, Sukapura, Probolinggo</div>
+        <a class="map-link" href="https://maps.app.goo.gl/jCjR13rXCUFspXqM6" target="_blank">Google Maps</a>
+      </div>
+    </div>
+
+    <!-- DAY 3 -->
+    <div class="card highlight">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 3 · 5/15 五</div>
+          <div class="day-title">火山日出 + Kucur 村</div>
+        </div>
+        <span class="badge accent">行程亮點</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">03:00</div>
+          <div class="body">
+            <div class="title">吉普車前往日出觀景台</div>
+            <div class="desc">車程 40 分鐘,觀景台氣溫 5–10°C 需保暖</div>
+            <div class="tip">羽絨外套 + 手套 + 毛帽是必備</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">06:00</div>
+          <div class="body">
+            <div class="title">沙海 + 火山口</div>
+            <div class="desc">沙海拍照 → 騎馬攀登(一人一馬有馬伕)→ 步行登火山口階梯約五層樓 → 步行回集合點</div>
+            <div class="tip">沙海塵土大戴口罩;火山口邊緣注意安全;準備小額美金/印尼盾給馬伕</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Mount+Bromo+Crater" target="_blank">Bromo 火山口</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">13:00</div>
+          <div class="body">
+            <div class="title">前往 Kucur 村</div>
+            <div class="desc">車程 3 小時</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">16:00</div>
+          <div class="body">
+            <div class="title">Kucur 村自由探索</div>
+            <div class="desc">各自前往 Homestay,晚餐在 Homestay 享用</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Kucur+Village+Malang" target="_blank">Kucur 村</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">19:30</div>
+          <div class="body">
+            <div class="title">神靈舞蹈晚會(19:30–22:30)</div>
+            <div class="desc">當地傳統儀式,類似乩童</div>
+            <div class="tip">晚會結束晚,可先回 Homestay 休息再搭車回市區</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Hotel Santika Premiere(瑪琅)</strong></div>
+        <div style="color: var(--text-2); margin-top: 2px;">Jl. Letjen Sutoyo No.79, Lowokwaru, Malang</div>
+        <a class="map-link" href="https://goo.gl/maps/5Wz3s4SMtwhVHbF18" target="_blank">Google Maps</a>
+      </div>
+    </div>
+
+    <!-- 瑪琅城市景點地圖 -->
+    <div class="city-section">
+      <div class="city-banner">
+        <div class="city-info">
+          <div class="city-name-tw">瑪琅</div>
+          <div class="city-name-en">Malang · DAY 4 上午</div>
+          <div class="city-desc">九十路精選景點地圖,含彩虹村、按摩 SPA 推薦等</div>
+        </div>
+        <a class="map-cta" href="https://goo.gl/maps/i5CU1fFoa8qwfDwc7" target="_blank">城市景點地圖</a>
+      </div>
+    </div>
+
+    <!-- DAY 4 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 4 · 5/16 六</div>
+          <div class="day-title">瑪琅 → 火車 → 日惹</div>
+        </div>
+        <span class="badge warn">長途火車</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">上午</div>
+          <div class="body">
+            <div class="title">瑪琅自由探索</div>
+            <div class="desc">彩虹村(分彩虹區/湛藍區,各需門票)、按摩 SPA(需預約)</div>
+            <div class="tip">先買乾糧上火車</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Kampung+Warna+Warni+Jodipan+Malang" target="_blank">彩虹村</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">14:00</div>
+          <div class="body">
+            <div class="title">小巴前往 Malang 火車站</div>
+            <div class="desc">車程 15 分鐘</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Malang+Railway+Station" target="_blank">Malang 車站</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">14:55</div>
+          <div class="body">
+            <div class="title">火車發車 → 20:19 抵達日惹</div>
+            <div class="desc">車程 5.5 小時,火車有便當可買</div>
+            <div class="tip">抵達月台人潮多,跟緊隨行旅人</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">20:30</div>
+          <div class="body">
+            <div class="title">前往日惹旅館</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Yogyakarta+Tugu+Station" target="_blank">日惹 Tugu 車站</a>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Royal Malioboro by Aston(日惹)</strong></div>
+        <div style="color: var(--text-2); margin-top: 2px;">Sosromenduran, Yogyakarta City</div>
+        <a class="map-link" href="https://maps.app.goo.gl/vw8sbJhWjif9ijQe9" target="_blank">Google Maps</a>
+      </div>
+    </div>
+
+    <!-- 日惹城市景點地圖 -->
+    <div class="city-section">
+      <div class="city-banner">
+        <div class="city-info">
+          <div class="city-name-tw">日惹</div>
+          <div class="city-name-en">Yogyakarta · DAY 5–6</div>
+          <div class="city-desc">九十路精選景點地圖,含皇宮、水宮、馬利波羅大街等</div>
+        </div>
+        <a class="map-cta" href="https://goo.gl/maps/vnPgvE6Cdp6jikbK9" target="_blank">城市景點地圖</a>
+      </div>
+    </div>
+
+    <!-- DAY 5 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 5 · 5/17 日</div>
+          <div class="day-title">蠟染 + 婆羅浮屠</div>
+        </div>
+        <span class="badge info">世界遺產</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">上午</div>
+          <div class="body">
+            <div class="title">自由探索</div>
+            <div class="desc">皇宮博物館 Kraton(運氣好可聽傳統音樂)、水宮 Taman Sari(皇室夏宮,適合拍照)</div>
+            <div class="tip">皇宮、水宮都需要門票,留意開放時間</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Kraton+Yogyakarta" target="_blank">皇宮 Kraton</a>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Taman+Sari+Water+Castle+Yogyakarta" target="_blank">水宮 Taman Sari</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">12:00</div>
+          <div class="body">
+            <div class="title">Batik 蠟染體驗(12:00–13:00)</div>
+            <div class="desc">完成可帶手帕回家</div>
+            <a class="map-link" href="https://goo.gl/maps/LJCSLwasq5u1KV5D9" target="_blank">蠟染教室</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">13:30</div>
+          <div class="body">
+            <div class="title">婆羅浮屠 Borobudur(13:30–17:00)</div>
+            <div class="desc">單趟車程 1.5 小時,登塔不保證(需事前預約且有人數限制)</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Borobudur+Temple" target="_blank">婆羅浮屠</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">晚上</div>
+          <div class="body">
+            <div class="title">歡送晚會</div>
+            <div class="desc">費用自理</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Royal Malioboro by Aston(日惹)</strong></div>
+      </div>
+    </div>
+
+    <!-- DAY 6 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 6 · 5/18 一</div>
+          <div class="day-title">普蘭巴南</div>
+        </div>
+        <span class="badge info">世界遺產</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">上午</div>
+          <div class="body">
+            <div class="title">馬利波羅大街自由探索</div>
+            <div class="desc">紀念品與小吃,日惹最熱鬧的徒步街</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Malioboro+Street+Yogyakarta" target="_blank">馬利波羅大街</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">14:30</div>
+          <div class="body">
+            <div class="title">普蘭巴南 Prambanan(14:30–17:30)</div>
+            <div class="desc">單趟車程 40 分鐘,印度教世界遺產,自由穿梭石塔</div>
+            <a class="map-link" href="https://www.google.com/maps/search/?api=1&query=Prambanan+Temple" target="_blank">普蘭巴南</a>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">晚上</div>
+          <div class="body">
+            <div class="title">市區自理晚餐或最後晚會</div>
+          </div>
+        </div>
+      </div>
+      <div class="stay-block">
+        <div class="stay-label">住宿</div>
+        <div><strong>Royal Malioboro by Aston(日惹)</strong></div>
+      </div>
+    </div>
+
+    <!-- DAY 7 -->
+    <div class="card">
+      <div class="card-head">
+        <div>
+          <div class="day-label">DAY 7 · 5/19 二</div>
+          <div class="day-title">日惹 → 雅加達 → 桃園</div>
+        </div>
+        <span class="badge muted">解散日</span>
+      </div>
+      <div class="timeline">
+        <div class="row">
+          <div class="time">04:00</div>
+          <div class="body">
+            <div class="title">早起前往 YIA 機場</div>
+            <div class="desc">日惹市區到 YIA 機場約 1 小時車程,建議起飛前 2 小時抵達</div>
+            <div class="tip">GA207 早班機 06:20 起飛,建議前一晚請旅館協助叫車,並收拾好行李</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">06:20</div>
+          <div class="body">
+            <div class="title">GA207 日惹 YIA → 雅加達 CGK</div>
+            <div class="desc">抵達 07:45,雅加達 Soekarno-Hatta 第三航廈</div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="time">14:40</div>
+          <div class="body">
+            <div class="title">CI762 雅加達 CGK → 桃園 TPE</div>
+            <div class="desc">抵達 21:05</div>
+            <div class="tip">CGK 兩段間有 6+ 小時轉機時間,可在機場休息或用餐</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ========== 緊急聯絡 ========== -->
+  <section id="contact">
+    <h2 class="section-title">緊急聯絡資訊</h2>
+
+    <div class="card">
+      <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 500;">台灣</h3>
+      <table class="detail">
+        <tr><td class="label">外交部</td><td>0800-085-095(可從國外撥回)</td></tr>
+        <tr><td class="label">阿勳(緊急)</td><td>+886 0988 519 021</td></tr>
+        <tr><td class="label">又寧</td><td>+886 0963 300 276</td></tr>
+        <tr><td class="label">隨行旅人 KC</td><td>LINE ID: hio18679</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 500;">印尼</h3>
+      <table class="detail">
+        <tr><td class="label">泗水緊急</td><td>+62-822-5766-9680</td></tr>
+        <tr><td class="label">雅加達緊急</td><td>+62-811-984-676</td></tr>
+      </table>
+    </div>
+
+    <div class="card">
+      <h3 style="margin: 0 0 12px; font-size: 14px; font-weight: 500;">住宿地址</h3>
+      <table class="detail">
+        <tr><td class="label">泗水</td><td><strong>Hotel Platinum Tunjungan</strong><br/>Jl. Tunjungan No.11-21, Genteng, Surabaya</td></tr>
+        <tr><td class="label">Bromo</td><td><strong>Lava View Lodge</strong><br/>Cemorolawang, Ngadisari, Sukapura, Probolinggo</td></tr>
+        <tr><td class="label">瑪琅</td><td><strong>Hotel Santika Premiere</strong><br/>Jl. Letjen Sutoyo No.79, Lowokwaru, Malang</td></tr>
+        <tr><td class="label">日惹</td><td><strong>Royal Malioboro by Aston</strong><br/>Sosromenduran, Yogyakarta City</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <footer>
+    爪哇 37 團 · 2026/5/12–5/19 · 旅平安
+  </footer>
+</div>
+
+<script>
+  // ===== 行前準備清單 =====
+  const prepData = [
+    {
+      name: "01 電子簽證",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必辦",
+      items: [
+        { text: "至 evisa.imigrasi.go.id 申辦電子簽證", note: "選 VISA ON ARRIVAL 30 days,不需註冊帳號" },
+        { text: "簽證地址填寫泗水旅館", note: "Jl. Dinoyo No.86, Keputran, Kec. Tegalsari, Kota SBY, Jawa Timur 60265" },
+        { text: "線上刷卡完成付款", note: "" },
+        { text: "eVisa 彩色 A4 列印", note: "隨身攜帶,建議印 2 份" },
+        { text: "出發前 3 日內填寫線上海關申報", note: "國家別選 other,手填 taiwan" }
+      ]
+    },
+    {
+      name: "02 線上登機",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必辦",
+      items: [
+        { text: "出發航班 CI761 線上報到", note: "中華航空官網/APP,起飛前 24 小時開放" },
+        { text: "雅加達轉泗水 CI9684 線上報到", note: "通常與 CI761 同步開放" },
+        { text: "回程 GA207(YIA→CGK)線上報到", note: "Garuda Indonesia 官網/APP,起飛前 24 小時" },
+        { text: "回程 CI762(CGK→TPE)線上報到", note: "" },
+        { text: "登機證截圖或下載至手機", note: "離線也能看" }
+      ]
+    },
+    {
+      name: "03 行李準備",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必辦",
+      items: [
+        { text: "依「行李清單」分頁打包完畢", note: "" },
+        { text: "確認液體單瓶 < 100ml(隨身行李)", note: "" },
+        { text: "電池/行動電源/打火機放隨身行李", note: "不可托運" },
+        { text: "向地勤確認行李直掛雅加達", note: "雅加達轉泗水時須重新掛行李" }
+      ]
+    },
+    {
+      name: "04 換匯與網路",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必辦",
+      items: [
+        { text: "準備至少 200 USD 美金", note: "雅加達機場換印尼盾匯率最佳(約 1 USD = 15,500 IDR)" },
+        { text: "在台灣買網卡 / 開通 Airalo eSIM", note: "泗水機場無法辦卡" },
+        { text: "(選)在台預換少量印尼盾", note: "台銀、兆豐、泰國盤谷可換,匯率普通" }
+      ]
+    },
+    {
+      name: "05 離線地圖與 APP",
+      priority: "high",
+      priorityLabel: "✱✱ 強烈建議",
+      items: [
+        { text: "Google Maps 下載泗水離線地圖", note: "標記集合旅館 → 離線地圖 → 選取自己的地圖 → 框泗水市區 → 下載" },
+        { text: "Google Maps 下載日惹/瑪琅離線地圖", note: "" },
+        { text: "下載 Grab APP", note: "東南亞 UBER,叫車+外送可現金付款" },
+        { text: "下載 Go Jek APP", note: "主打機車接送+外送,可現金付款" },
+        { text: "(選)下載 My Smartfren APP", note: "印尼當地電信,買網卡後可在 APP 充值" }
+      ]
+    },
+    {
+      name: "06 文件備份",
+      priority: "high",
+      priorityLabel: "✱✱ 強烈建議",
+      items: [
+        { text: "護照影本 ×2 份", note: "與正本分開放" },
+        { text: "身分證影本 ×2 份", note: "" },
+        { text: "電子機票列印", note: "建議影印出來攜帶" },
+        { text: "簽證影本", note: "" },
+        { text: "拍照存手機/雲端", note: "全部證件拍照備份" }
+      ]
+    },
+    {
+      name: "07 健康與旅平險",
+      priority: "high",
+      priorityLabel: "✱✱ 強烈建議",
+      items: [
+        { text: "投保旅遊平安險 + 醫療險", note: "建議含緊急醫療運送" },
+        { text: "個人慢性藥品準備充足", note: "" },
+        { text: "確認常備藥品有效期限", note: "腸胃、暈車、感冒、止痛、防蚊液" },
+        { text: "保留旅平險聯絡電話與保單號碼", note: "存手機+紙本各一份" }
+      ]
+    },
+    {
+      name: "08 出發前確認",
+      priority: "low",
+      priorityLabel: "✱ 出發前一晚",
+      items: [
+        { text: "確認 LINE 群組訊息", note: "九十路會公布最新集合資訊" },
+        { text: "手機/相機/行動電源充滿電", note: "" },
+        { text: "與家人交代行程與旅館聯絡方式", note: "" },
+        { text: "預留前往機場交通時間", note: "CI761 09:05 起飛,起飛前 2 小時抵達" }
+      ]
+    }
+  ];
+
+  // ===== 行李清單 =====
+  const baggageData = [
+    {
+      name: "證件",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必帶",
+      items: [
+        { text: "護照正本", note: "建議隨身攜帶" },
+        { text: "護照影本 ×2 份", note: "與正本分開放" },
+        { text: "身分證", note: "" },
+        { text: "身分證影本 ×2 份", note: "" },
+        { text: "電子機票", note: "影印出來攜帶" },
+        { text: "eVisa 彩色 A4 列印", note: "" },
+        { text: "簽證影本", note: "" }
+      ]
+    },
+    {
+      name: "現金與電子",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必帶",
+      items: [
+        { text: "美金現金", note: "雅加達機場換匯,建議 200 USD" },
+        { text: "新台幣", note: "" },
+        { text: "錢包", note: "" },
+        { text: "轉接頭(圓孔兩針)×2", note: "印尼為圓孔插座" },
+        { text: "充電線、充電頭", note: "" },
+        { text: "行動電源", note: "必須隨身,不可托運" }
+      ]
+    },
+    {
+      name: "衣物",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必帶",
+      items: [
+        { text: "夏季換洗衣物", note: "" },
+        { text: "長褲或長裙", note: "進清真寺/皇宮需過膝" },
+        { text: "輕便外套", note: "" },
+        { text: "保暖外套(薄羽絨)", note: "Bromo 看日出 5–10°C" },
+        { text: "健走鞋", note: "攀登火山" },
+        { text: "拖鞋", note: "" },
+        { text: "睡衣", note: "" },
+        { text: "內衣褲", note: "" },
+        { text: "泳衣", note: "Kucur 村與部分旅館有泳池" },
+        { text: "浴巾或速乾毛巾", note: "部分旅館未提供" }
+      ]
+    },
+    {
+      name: "藥品",
+      priority: "must",
+      priorityLabel: "✱✱✱ 必帶",
+      items: [
+        { text: "腸胃藥/止瀉藥", note: "" },
+        { text: "暈車藥", note: "兩段長途車要備量" },
+        { text: "感冒/退燒藥", note: "" },
+        { text: "止痛/經痛藥", note: "" },
+        { text: "防蚊液", note: "Kucur 村與戶外景點" },
+        { text: "維他命 C", note: "" },
+        { text: "個人慢性藥品", note: "" }
+      ]
+    },
+    {
+      name: "盥洗與保養",
+      priority: "high",
+      priorityLabel: "✱✱ 建議帶",
+      items: [
+        { text: "個人牙刷、牙膏", note: "部分旅館不提供" },
+        { text: "洗面乳", note: "" },
+        { text: "洗臉毛巾", note: "" },
+        { text: "保養品", note: "分裝小於 100ml" },
+        { text: "防曬乳", note: "太陽很大" },
+        { text: "護手霜", note: "" },
+        { text: "化妝品、隨身化妝包", note: "" },
+        { text: "髮夾、髮圈", note: "" },
+        { text: "飾品", note: "" }
+      ]
+    },
+    {
+      name: "防護用品",
+      priority: "high",
+      priorityLabel: "✱✱ 建議帶",
+      items: [
+        { text: "口罩", note: "海鮮市場/香料市集/沙海" },
+        { text: "墨鏡", note: "" },
+        { text: "帽子", note: "防曬" },
+        { text: "折疊傘", note: "" },
+        { text: "酒精濕紙巾", note: "" },
+        { text: "酒精噴霧 (<100ml)", note: "" },
+        { text: "衛生紙", note: "" },
+        { text: "眼藥水", note: "" },
+        { text: "耳塞", note: "好入眠+火車用" },
+        { text: "保健食品", note: "" }
+      ]
+    },
+    {
+      name: "環保與便利",
+      priority: "high",
+      priorityLabel: "✱✱ 建議帶",
+      items: [
+        { text: "水壺", note: "過安檢前需倒空" },
+        { text: "環保餐具", note: "" },
+        { text: "塑膠袋/夾鏈袋", note: "打包火山下來的髒衣鞋" },
+        { text: "原子筆", note: "填海關表用" },
+        { text: "小額美金散鈔", note: "1/5/10 USD,小費場合用" }
+      ]
+    },
+    {
+      name: "可帶可不帶",
+      priority: "low",
+      priorityLabel: "✱ 可選",
+      items: [
+        { text: "泡麵與零食", note: "若擔心食物不適應" },
+        { text: "書", note: "一直想看的那本" },
+        { text: "筆記本", note: "記錄旅行心情" },
+        { text: "童軍繩 + 曬衣夾", note: "若想自己洗衣" },
+        { text: "手機防水/防塵袋", note: "沙海塵土" }
+      ]
+    }
+  ];
+
+  // ===== 渲染 checklist 通用函式 =====
+  function renderChecklist(data, containerId, progressId, prefix) {
+    const container = document.getElementById(containerId);
+    let total = 0;
+    const state = {};
+
+    data.forEach((group, gi) => {
+      const div = document.createElement("div");
+      div.className = "group";
+      const priClass = group.priority === "must" ? "must" : "";
+      div.innerHTML = `<h3>${group.name} <span class="priority ${priClass}">${group.priorityLabel}</span></h3>`;
+      group.items.forEach((item, ii) => {
+        total++;
+        const key = `${prefix}-${gi}-${ii}`;
+        const row = document.createElement("div");
+        row.className = "item";
+        row.innerHTML = `
+          <input type="checkbox" id="${key}" data-key="${key}">
+          <div class="label-block">
+            <div class="label-text">${item.text}</div>
+            ${item.note ? `<div class="note">${item.note}</div>` : ""}
+          </div>
+        `;
+        div.appendChild(row);
+        state[key] = false;
+      });
+      container.appendChild(div);
+    });
+
+    function updateProgress() {
+      const checked = Object.values(state).filter(v => v).length;
+      document.getElementById(progressId).textContent = `${checked} / ${total} 已完成`;
+    }
+    updateProgress();
+
+    container.addEventListener("change", (e) => {
+      if (e.target.type === "checkbox") {
+        const key = e.target.dataset.key;
+        state[key] = e.target.checked;
+        e.target.closest(".item").classList.toggle("checked", e.target.checked);
+        updateProgress();
+      }
+    });
+
+    container.addEventListener("click", (e) => {
+      const item = e.target.closest(".item");
+      if (item && e.target.tagName !== "INPUT") {
+        const cb = item.querySelector("input[type=checkbox]");
+        cb.checked = !cb.checked;
+        cb.dispatchEvent(new Event("change", { bubbles: true }));
+      }
+    });
+
+    return {
+      reset: () => {
+        container.querySelectorAll("input[type=checkbox]").forEach(cb => {
+          cb.checked = false;
+          cb.closest(".item").classList.remove("checked");
+        });
+        Object.keys(state).forEach(k => state[k] = false);
+        updateProgress();
+      }
+    };
+  }
+
+  const prepCtrl = renderChecklist(prepData, "prep-groups", "prep-progress", "prep");
+  const baggageCtrl = renderChecklist(baggageData, "baggage-groups", "baggage-progress", "baggage");
+
+  document.getElementById("reset-prep-btn").addEventListener("click", prepCtrl.reset);
+  document.getElementById("reset-baggage-btn").addEventListener("click", baggageCtrl.reset);
+
+  // tab 切換
+  document.getElementById("tabs").addEventListener("click", (e) => {
+    if (e.target.tagName === "BUTTON") {
+      const tab = e.target.dataset.tab;
+      document.querySelectorAll("nav.tabs button").forEach(b => b.classList.toggle("active", b.dataset.tab === tab));
+      document.querySelectorAll("section").forEach(s => s.classList.toggle("active", s.id === tab));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  });
+  // service worker 註冊(支援離線)
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    });
+  }
+</script>
+</body>
+</html>
