@@ -1,7 +1,7 @@
 {
-  "name": "爪哇 37 團 · 旅行手冊",
-  "short_name": "爪哇37團",
-  "description": "2026/5/12-5/19 印尼東爪哇行程、行李、行前準備",
+  "name": "首爾城市遊 · 旅行手冊",
+  "short_name": "首爾行",
+  "description": "2026/10/9-10/13 首爾城市遊行程、行李、行前準備",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#fafaf7",
