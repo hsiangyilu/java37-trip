@@ -1,5 +1,5 @@
 // 首爾城市遊旅行手冊 Service Worker
-const CACHE_NAME = 'seoul2610-v3';
+const CACHE_NAME = 'seoul2610-v4';
 const ASSETS = [
   './',
   './index.html',
